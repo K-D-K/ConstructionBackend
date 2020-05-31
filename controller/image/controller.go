@@ -1,6 +1,7 @@
 package image
 
 import (
+	"fmt"
 	"mime/multipart"
 	"smfbackend/imagehandler"
 	"smfbackend/models"
@@ -55,6 +56,6 @@ func (controller Controller) Create(file multipart.File, description string) mod
 		smferror.ThrowAPIError("Error while creating Image")
 	}
 
-	imagehandler.UploadImage(file, string(image.ID))
+	imagehandler.UploadImage(file, fmt.Sprint(image.ID))
 	return image
 }

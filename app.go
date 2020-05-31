@@ -55,7 +55,7 @@ func main() {
 	router.HandleFunc("/projects", handler.ExecutorWithDB(project.GET)).Methods("GET")
 	router.HandleFunc("/projects", handler.ExecutorWithDB(project.POST)).Methods("POST")
 
-	router.HandleFunc("/images/{image_id}", handler.Executor(image.GET)).Methods("GET")
+	router.Handle("/images/{image_id}", http.StripPrefix("/images", http.FileServer(http.Dir("./Images"))))
 	router.HandleFunc("/images", handler.ExecutorWithDB(image.POST)).Methods("POST")
 
 	http.ListenAndServe(":8001", router)

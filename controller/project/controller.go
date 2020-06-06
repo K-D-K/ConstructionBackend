@@ -15,15 +15,13 @@ func INSTANCE(db *gorm.DB) *Controller {
 	return &Controller{db}
 }
 
-func (controller Controller) Create(projects []models.Project) {
-	for _, project := range projects {
-		controller.db.Create(&project)
-	}
+func (controller Controller) Create(project interface{}) {
+	controller.db.Create(project)
 }
 
 func (controller Controller) GetProjects() []models.Project {
 	projects := []models.Project{}
-	err := controller.db.Preload("Address").Limit(4).Find(&projects).Error
+	err := controller.db.Preload("Address").Preload("Images").Find(&projects).Error
 	if err != nil {
 		panic(err)
 	}

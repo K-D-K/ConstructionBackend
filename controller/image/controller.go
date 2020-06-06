@@ -5,6 +5,7 @@ import (
 	"mime/multipart"
 	"smfbackend/imagehandler"
 	"smfbackend/models"
+	"smfbackend/utils"
 	"strings"
 
 	smferror "smfbackend/utils/error"
@@ -21,27 +22,65 @@ func INSTANCE(db *gorm.DB) *Controller {
 	return &Controller{db}
 }
 
+// NOTE: Need to handle delete images case
 func (controller Controller) AssociateImages(projects []models.Project) {
+	projectIds := utils.ExtractProjectIds(projects)
+	projectVsImageMap := groupImagesByProjects(controller.GetForProjects(projectIds))
+	fmt.Println("Project ids ", projectIds)
 	for _, project := range projects {
 		images := project.Images
-		projectID := project.ID
-		imageIds := make([]uint, len(images))
-		for index, image := range images {
-			imageIds[index] = image.ID
+		var imageIds []uint
+		associatedImages, ok := projectVsImageMap[project.ID]
+		imageSet := map[uint]struct{}{}
+
+		if ok {
+			imageSet = createImageIdsSet(associatedImages)
 		}
 
-		associatedImages, err := controller.GetForProject(projectID)
-		if err != nil {
-			panic(err)
+		for _, image := range images {
+			if _, ok := imageSet[image.ID]; !ok {
+				imageIds = append(imageIds, image.ID)
+			}
 		}
-		associatedImages = associatedImages
+
+		fmt.Println("Images ", images)
+		fmt.Println("Images Set ", imageSet)
+		fmt.Println("Images ids ", imageIds)
+
+		if len(imageIds) > 0 {
+			controller.db.Model(&models.Image{}).Where("id in (?)", imageIds).Update("project_id", project.ID)
+		}
 	}
 }
 
-func (controller Controller) GetForProject(projectID uint) ([]models.Image, error) {
+func groupImagesByProjects(images []models.Image) map[uint][]models.Image {
+	imageMap := make(map[uint][]models.Image)
+	for _, image := range images {
+		projectImages, ok := imageMap[image.ProjectId]
+		if !ok {
+			projectImages = []models.Image{}
+		}
+		projectImages = append(projectImages, image)
+		imageMap[image.ProjectId] = projectImages
+	}
+	return imageMap
+}
+
+func createImageIdsSet(images []models.Image) map[uint]struct{} {
+	set := make(map[uint]struct{})
+	for _, image := range images {
+		set[image.ID] = struct{}{}
+	}
+	return set
+}
+
+func (controller Controller) GetForProjects(projectIDs []uint) []models.Image {
 	images := []models.Image{}
-	err := controller.db.Where("project_id = ?", projectID).Find(&images).Error
-	return images, err
+	err := controller.db.Where("project_id in (?)", projectIDs).Find(&images).Error
+	if err != nil {
+		panic(err)
+	}
+	return images
 }
 
 // Create an image

@@ -1,14 +1,13 @@
 package models
 
-import "github.com/jinzhu/gorm"
-
 type Address struct {
-	gorm.Model
-	Name     string
-	Street   string
-	City     string
-	District string
-	Pin      string
-	Mobile   string
-	Mail     string
+	Model
+	Name     string `json:"name"`
+	Street   string `json:"street"`
+	City     string `json:"city"`
+	District string `json:"district"`
+	Pin      string `json:"pin"`
+	Mobile   string `json:"mobile"`
+	Mail     string `json:"mail"`
+	Location string `json:"location"`
 }

@@ -7,15 +7,36 @@ import (
 	"smfbackend/controller/project"
 	"smfbackend/handler"
 	"smfbackend/models"
+	"smfbackend/utils"
+	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 )
 
 func GET(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+	params := mux.Vars(r)
+	projectID, _ := strconv.ParseUint(params["project_id"], 10, 64)
 	projectInstance := project.INSTANCE(db)
-	projects := projectInstance.GetProjects()
+	project := projectInstance.GetProject(projectID)
+
+	byteArr, _ := json.Marshal(project)
+
+	handler.RespondwithJSON(w, http.StatusOK, byteArr)
+}
+
+func GET_ALL(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+	query := r.URL.Query()
+	fields := query["field"]
+	projectInstance := project.INSTANCE(db)
+	projects := projectInstance.GetProjects(fields)
 
 	byteArr, _ := json.Marshal(projects)
+
+	if len(fields) > 0 {
+		byteArr, _ = utils.ExtractKeys(byteArr, fields)
+	}
+
 	handler.RespondwithJSON(w, http.StatusOK, byteArr)
 }
 

@@ -52,7 +52,8 @@ func main() {
 
 	migration.RunMigration()
 
-	router.HandleFunc("/projects", handler.ExecutorWithDB(project.GET)).Methods("GET")
+	router.HandleFunc("/projects/{project_id}", handler.ExecutorWithDB(project.GET)).Methods("GET")
+	router.HandleFunc("/projects", handler.ExecutorWithDB(project.GET_ALL)).Methods("GET")
 	router.HandleFunc("/projects", handler.ExecutorWithDB(project.POST)).Methods("POST")
 
 	router.Handle("/images/{image_id}", http.StripPrefix("/images", http.FileServer(http.Dir("./Images"))))

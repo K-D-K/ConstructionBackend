@@ -1,15 +1,11 @@
 package models
 
-import (
-	"github.com/jinzhu/gorm"
-)
-
 // Project struct
 type Project struct {
-	gorm.Model
-	Comment   string
-	Name      string
-	Address   Address
+	Model
+	Comment   string  `json:"comment"`
+	Name      string  `json:"name"`
+	Address   Address `json:"address"`
 	AddressID uint    `json:"-"`
-	Images    []Image `gorm:"association_save_reference:false"`
+	Images    []Image `gorm:"association_save_reference:false" json:"images"`
 }

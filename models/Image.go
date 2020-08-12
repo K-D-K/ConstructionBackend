@@ -1,9 +1,7 @@
 package models
 
-import "github.com/jinzhu/gorm"
-
 type Image struct {
-	gorm.Model
-	Description string
-	ProjectId   uint `gorm:"column:project_id"`
+	Model
+	Description string `json:"description"`
+	ProjectId   uint   `gorm:"column:project_id" json:"project_id"`
 }

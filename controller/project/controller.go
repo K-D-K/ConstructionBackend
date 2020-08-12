@@ -19,11 +19,26 @@ func (controller Controller) Create(project interface{}) {
 	controller.db.Create(project)
 }
 
-func (controller Controller) GetProjects() []models.Project {
+func (controller Controller) GetProjects(fields []string) []models.Project {
 	projects := []models.Project{}
-	err := controller.db.Preload("Address").Preload("Images").Find(&projects).Error
+	db := controller.db
+	if len(fields) > 0 {
+		db = db.Select(fields)
+	} else {
+		db = db.Preload("Address").Preload("Images")
+	}
+	err := db.Find(&projects).Error
 	if err != nil {
 		panic(err)
 	}
 	return projects
+}
+
+func (controller Controller) GetProject(projectId uint64) models.Project {
+	project := models.Project{}
+	err := controller.db.Preload("Address").Preload("Images").First(&project, projectId).Error
+	if err != nil {
+		panic(err)
+	}
+	return project
 }

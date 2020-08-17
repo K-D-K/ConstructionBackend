@@ -13,7 +13,6 @@ import (
 func ExecutorWithDB(handler func(http.ResponseWriter, *http.Request, *gorm.DB)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		db := datastore.GetDBConnection().Begin()
-		handler(w, r, db)
 		defer func() {
 			if r := recover(); r != nil {
 				db.Rollback()
@@ -22,18 +21,19 @@ func ExecutorWithDB(handler func(http.ResponseWriter, *http.Request, *gorm.DB)) 
 				db.Commit()
 			}
 		}()
+		handler(w, r, db)
 		defer db.Close()
 	}
 }
 
 func Executor(handler func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		handler(w, r)
 		defer func() {
 			if r := recover(); r != nil {
 				RespondWithError(w, r.(error))
 			}
 		}()
+		handler(w, r)
 	}
 }
 
